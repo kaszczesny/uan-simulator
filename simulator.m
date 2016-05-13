@@ -1,19 +1,19 @@
+% main function for simulation of communication between two nodes
 function [] = simulator ( ... %todo retval
-tx, ... %transmitter position - vector: [x y z] m
-rx, ... %receiver position - vector: [x y z] m
-depth, ... %seabed position (negative) m
-freq, ... %carrier Hz
-salinity, ... %parts per 1000 (25-40)
-temperature, ... %Celcius
-attModel, ... %'thorpe' of 'fisher'
-noiseParams, ... % vector [shipping<0-1> wind<m/s>]
-distanceResolution ... % for dynamic speed of sound calculation; m
-% todo: modulation, seabed params, node movement
+  tx, ... % transmitter position - vector: [x y z] m
+  rx, ... % receiver position - vector: [x y z] m
+  freq, ... % carrier Hz
+  salinity, ... % parts per 1000 (25-40)
+  temperature, ... % Celcius
+  attModel, ... % 'thorpe' of 'fisher'
+  noiseParams, ... % vector [shipping<0-1> wind<m/s>]
+  % todo: seabed params, modulation, node movement, simulation time
 )
 
-attenuation = 0; %dB/m
+% todo theory: what sound carrier frequencies, transmission powers, data rates are feasiable?
 
-%setting up models - TODO
+% todo: set up seabed, figure out lowest point of the simulation (depth variable)
+
 switch attModel
   case 'thorpe'
     temperature = 4; %model assumption
@@ -22,8 +22,12 @@ switch attModel
     end
     
     attenuation = soundAttenuationThorpe(freq); %dB/m
+    
   case 'fisher'
     error('TODO')
+    
+    attenuation; %dB/m
+    
   otherwise
     error('Only thorpe/fisher')
 end
@@ -36,30 +40,17 @@ noise(2) = 40 + 20*(noiseParams(1)-0.5) + 26*log10(freqkHz) - 60*log10(freqkHz+0
 noise(3) = 50 + 7.5*sqrt(noiseParams(2)) + 20*log10(freqkHz) - 40*log10(freqkHz+0.4); %waves dB
 noise(4) = -15 + 20*log10(freqkHz); %thermal dB
 
+% return to linear power in order to sum
+noise = 10.^(noise/10);
 noise = sum(noise);
+noise = 10*log10(noise);
 
 %path finding
 % LOS - special case (draft)
-losLen = sqrt(sum(tx-rx).^2);
-direction = tx-rx;
-versor = direction / norm(direction) * distanceResolution;
-
-vs=[];
-time = 0;
-where = tx;
-cumLen = 0;
-while cumLen <= losLen
-  v = soundSpeed(temperature, salinity, where(3));
-  vs = [vs v];
-  time = time + 1/v;
-  where = where + versor;
-  cumLen = cumLen + 1;
-end
-if cumLen ~= losLen
-  v = soundSpeed(temperature, salinity, where(3));
-  vs = [vs v];
-  time = time + (losLen-cumLen)/v;
-end
+losLen = norm(tx-rx);
+losV = soundSpeed(temperature, salinity, [tx(3); rx(3)])
+% v=s/t -> t = s/v
+losTime = losLen / losV;
 
 maxReflections = 3;
 %todo
