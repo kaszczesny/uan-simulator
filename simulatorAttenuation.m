@@ -1,0 +1,33 @@
+% compares acoustic and EM LOS Path Loss
+
+distance = logspace( 0, 5, 1000 ); % 1 dm - 100 km
+freq_ac = 10e3;
+semilogx( ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 2.0 ), 'r', ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 1.5 ), 'g', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 2.0 ), 'b', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 1.5 ), 'k' ...
+);
+grid on;
+legend( ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ) ...
+);
+
+depth = 0:200:4000;
+frequency = [0:5:100]*1e3;
+
+[x, y] = meshgrid(depth, frequency);
+z = soundAttenuationFisher( y, x, waterTemperature( x, 15 ) );
+
+surf(x,y*1e-3,z*1e3);
+colormap('jet');
+xlabel('depth [m]')
+ylabel('frequency [kHz]');
+zlabel('sound absorption [dB/km]');
+colorbar
+
+%todo meshgrid: distance x frequency
+%todo EM

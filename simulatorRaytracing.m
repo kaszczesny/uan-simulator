@@ -1,15 +1,17 @@
 % main function for simulation of communication between two nodes
-function [] = simulator ( ... %todo retval
+% compares communication with acoustic and EM waves, taking into account multipath propagation
+
+function [] = simulatorRaytracing ( ...
   tx, ... % transmitter position - vector: [x y z] m
   rx, ... % receiver position - vector: [x y z] m
   freq, ... % carrier Hz
-  salinity, ... % parts per 1000 (25-40)
-  temperature, ... % Celcius
+  temperature, ... % water surface temperature; Celcius
   attModel, ... % 'thorpe' of 'fisher'
   noiseParams, ... % vector [shipping<0-1> wind<m/s>]
-  % todo: seabed params, modulation, node movement, simulation time
+  % todo: seabed params (shape, material), modulation order, symbol period, node movement, simulation time
 )
-
+% todo retval: attenuation, impulse response, power delay profile, BER, capacity, eye diagram?
+% todo theory: what is the difference between power delay profile and impulse response?
 % todo theory: what sound carrier frequencies, transmission powers, data rates are feasiable?
 
 % todo: set up seabed, figure out lowest point of the simulation (depth variable)
@@ -48,33 +50,26 @@ noise = 10*log10(noise);
 %path finding
 % LOS - special case (draft)
 losLen = norm(tx-rx);
-losV = soundSpeed(temperature, salinity, [tx(3); rx(3)])
+losV = soundSpeed(temperature, [tx(3); rx(3)])
 % v=s/t -> t = s/v
 losTime = losLen / losV;
 
 maxReflections = 3;
-%todo
+%todo find paths - list/vector of reflection points and possibly indicators on which polygon are those reflections
+% paths are same for both wave types
 
-%path length calculation -> attenuation (both acoustic and EM)
-%path time calculation for EM -> simple formula
-%path time calculation for acoustic -> check every distanceResolution along the path
-%phase & amplitude calculation reflection attenuation: constant random variable in reflection points [space] + time-variable if there is node movement, otherwise probably constant)
-%sum paths into transmittance (brus #3 p.25)
+%todo impulse response h for acoustic and EM:
+% for each ray find:
+%  -time delay due to propagation (subtract LOS propagation time)
+%  -amplitude of ray in relation to unity (loss due to path loss and reflections)
+%  -phase of ray in relation to initial (0) phase (number of wavelengths passed due to propagation & reflection phase shifts)
+% 
+hAcoustic = complex( zeros( 1, max( delays )*timeResolution ) );
+hAcoustic( delays*timeResolution ) = abs(losses) * exp(-1i * phases ); %losses are linear, NOT dB
+
+%hEM
 
 %channel estimated for one sample
 
-%msg creation, modulation, propagation, demodulation, comparison 
-
-%the same for EM wave
-
-
-
-
-
-
-%seawater for EM: epsilon_r = 81, mi_r 1, sigma = 4 S/m
-
-%separate simulations:
-%  attuenuation(distance) for acoustic and EM (both LOS)
-%  refraction+reflection in 2D for acoustic (brus #3 p.7)
-%  range(BER) at given modulation for acoustic and EM? eye pattern?
+% msg creation, modulation
+%for acoustic and EM: convolution with h, noise, demodulation, comparison with msg
