@@ -1,11 +1,14 @@
 % returns attenuation in dB/m (so-called absorption)
 % assumptions: ...
 
-function [attenuation] = radioAttenuation ( ...
+function [attenuation] = radioAttenuation (
+frequency ... %Hz
 )
 
-% Underwater Wireless Sensor Network Communication Using Electromagnetic Waves at Resonance Frequency 2.4 GHz
-% Underwater Wireless Sensor Communications in the 2.4 GHz ISM Frequency Band
-% Feasibility of Electromagnetic Communication in Underwater Wireless Sensor Networks
+ang_freq = 2* pi() * frequency; %angular frequency, rad
+conductivity = 4; % [S/m] 0.01 for freshwater; 4 for salty water
+mi = 1.256627 * 10^(-6); %permeability of water
+permittivity = 81 * 10^(-9) / ( 36* pi() ); %81 is the relative permittivity for water
 
-%todo
+attenuation = ang_freq * sqrt( ( mi * permittivity / 2 ) * ( sqrt( 1 + (conductivity / (ang_freq * permittivity ))^2 ) - 1)); % returns attenuation in nepers per meter
+attenuation = attenuation / ( 20 *log10(e) ); %returns attenuation in dB/m

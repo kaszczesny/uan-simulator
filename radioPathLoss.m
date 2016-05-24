@@ -1,10 +1,8 @@
 %returns path loss in dB for given path length
 
-function [pathLoss] = radioPathLoss ( ...
+function [pathLoss] = radioPathLoss (
+attenuation, ... %
+distance ... %
 )
 
-% Underwater Wireless Sensor Network Communication Using Electromagnetic Waves at Resonance Frequency 2.4 GHz
-% Underwater Wireless Sensor Communications in the 2.4 GHz ISM Frequency Band
-% Feasibility of Electromagnetic Communication in Underwater Wireless Sensor Networks
-
-%todo
+pathLoss = 10 * log( exp(attenuation * distance) );
