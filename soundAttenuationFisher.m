@@ -32,7 +32,7 @@ if size(d, 1) ~= 2
     C.*(1 - 3.8e-4*P_atm).*freq2; %pure water
 else
   %calculate average speed by integrating and dividing by interval length
-  d = sort(d, 1)
+  d = sort(d, 1);
   p = abs(d) / 10; % pressure [atm] (1 atm for every 10 meters of depth)
   
   antiderivative = @(p) ... % integral over dp
