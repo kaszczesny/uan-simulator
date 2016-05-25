@@ -1,10 +1,10 @@
-% returns (constant) speed of EM in water
+% returns speed of EM in water [m/s]
 
 function [speed] = radioSpeed (
 frequency ... %Hz
 )
 
-ang_freq = 2* pi() * frequency %angular frequency, rad
+ang_freq = 2* pi() * frequency; %angular frequency, rad
 conductivity = 4; % [S/m] 0.01 for freshwater; 4 for salty water
 mi = 1.256627 * 10^(-6); %permeability of water
 permittivity = 81 * 10^(-9) / ( 36* pi() ); %81 is the relative permittivity for water

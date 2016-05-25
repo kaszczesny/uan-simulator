@@ -1,8 +1,9 @@
 %returns path loss in dB for given path length
 
 function [pathLoss] = radioPathLoss (
-attenuation, ... %
-distance ... %
+distance, ... % [m]
+attenuation ... % [dB/m] until changed to Np/m
+
 )
 
 %%Underwater Wireless Sensor Network Communication Using Electromagnetic Waves at Resonance Frequency 2.4 GHz

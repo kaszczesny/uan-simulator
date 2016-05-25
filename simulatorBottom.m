@@ -48,6 +48,8 @@ inter_point = sta1+(dot((sta1-rectangle(1,:)),N)/dot(sta1-sta2mirror,N))*(sta2mi
 line_vector = sta1-inter_point;
 line_vector = line_vector/norm(line_vector);
 angle = asin( abs(line_vector(1)*N(1)+line_vector(2)*N(2)+line_vector(3)*N(3)) / ( sqrt(line_vector(1)^2 + line_vector(2)^2 + line_vector(3)^2) * sqrt(N(1)^2 + N(2)^2 + N(3)^2) ));
+%todo" pretty sure there (and in other lines with angles) there should be:
+%angle = angle * 180 / pi;
 angle = angle * 180;
 
 %preparing structures
