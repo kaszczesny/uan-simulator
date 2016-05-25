@@ -28,28 +28,6 @@ legend( ...
 ylim([0 350])
 title('path loss comparison')
 
-%path loss
-figure
-distance = logspace( 0, 5, 1000 ); % 1 m - 100 km
-freq_ac = 10e3;
-semilogx( ...
-  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 2.0 ), 'r', ...
-  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 1.5 ), 'g', ...
-  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 2.0 ), 'b', ...
-  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 1.5 ), 'k' ...
-);
-grid on;
-xlabel( 'distance [m]' )
-ylabel( 'path loss [dB]' )
-legend( ...
-  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
-  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
-  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
-  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 )
-);
-ylim([0 250])
-title('acoustic path loss')
-
 %Fisher absorption (fixed distance)
 depth = 0:200:8000;
 frequency = [0:2.5:100]*1e3;
@@ -78,6 +56,28 @@ ylabel('frequency [kHz]')
 zlabel('path loss [dB]')
 colorbar
 title('sound path loss, Fisher model, 500 m, 8 C')
+
+%path loss
+figure
+distance = 1:1:1000;
+freq_ac = 10e3;
+plot( ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 2.0 ), 'r', ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 1.5 ), 'g', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 2.0 ), 'b', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 1.5 ), 'k' ...
+);
+grid on;
+xlabel( 'distance [m]' )
+ylabel( 'path loss [dB]' )
+legend( ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 )
+);
+ylim([0 70])
+title('acoustic path loss')
 
 %EM pathloss
 figure
@@ -122,9 +122,10 @@ grid on
 
 %sound speed
 subplot(1,2,2)
-plot( soundSpeed( waterTemperature( depth, 15 ), depth ), -depth )
+plot( soundSpeed( waterTemperature( depth, 15 ), depth ), depth )
 xlabel( 'sound speed [m/s]')
 ylabel( 'depth [m]')
+set(gca,'ydir','reverse')
 grid on
 
 s = 2*pi*2.4e6/radioSpeed(2.4e6);
