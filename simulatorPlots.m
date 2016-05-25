@@ -25,8 +25,30 @@ legend( ...
   sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
   'Electromagnetic, f=2.4 MHz'
 );
-ylim([0 250])
+ylim([0 350])
 title('path loss comparison')
+
+%path loss
+figure
+distance = logspace( 0, 5, 1000 ); % 1 m - 100 km
+freq_ac = 10e3;
+semilogx( ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 2.0 ), 'r', ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 1.5 ), 'g', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 2.0 ), 'b', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 1.5 ), 'k' ...
+);
+grid on;
+xlabel( 'distance [m]' )
+ylabel( 'path loss [dB]' )
+legend( ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
+  sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 )
+);
+ylim([0 250])
+title('acoustic path loss')
 
 %Fisher absorption (fixed distance)
 depth = 0:200:8000;
@@ -91,10 +113,11 @@ disp(sprintf('radio noise: %.1f dBW, @ 10 C', radioNoise(10)))
 figure
 subplot(1,2,1)
 depth = 0:1:4000;
-plot( waterTemperature( depth, 15 ), -depth )
+plot( waterTemperature( depth, 15 ), depth )
 xlim([0 15])
 xlabel( 'water temperature [C]')
 ylabel( 'depth [m]')
+set(gca,'ydir','reverse')
 grid on
 
 %sound speed
