@@ -21,8 +21,9 @@ D ... %depth m 0-8000
  d2= 1.675e-7;     ts=-1.025e-2;
 td3=-7.139e-13;  
 
+D = abs(D);
+
 if size(D, 1) ~= 2
-  D = abs(D);
   speed = c + t*T + t2*(T.^2) + t3*(T.^3) + ...
     d*D + d2*(D.^2) + td3*T.*(D.^3);
 else

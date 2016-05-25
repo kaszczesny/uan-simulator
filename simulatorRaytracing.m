@@ -6,70 +6,142 @@ function [] = simulatorRaytracing ( ...
   rx, ... % receiver position - vector: [x y z] m
   freq, ... % carrier Hz
   temperature, ... % water surface temperature; Celcius
-  attModel, ... % 'thorpe' of 'fisher'
-  noiseParams, ... % vector [shipping<0-1> wind<m/s>]
-  % todo: seabed params (shape, material), modulation order, symbol period, node movement, simulation time
+  dataRate % bps
 )
-% todo retval: attenuation, impulse response, power delay profile, BER, capacity, eye diagram?
+% todo retval: attenuation, impulse response, power delay profile, BER?
 % todo theory: what is the difference between power delay profile and impulse response?
 % todo theory: what sound carrier frequencies, transmission powers, data rates are feasiable?
 
-% todo: set up seabed, figure out lowest point of the simulation (depth variable)
+soundTxPowerDb = 160; %dB rel miPa
+soundTxPower = 10.^(soundTxPowerDb/10); %miPa
 
-switch attModel
-  case 'thorpe'
-    temperature = 4; %model assumption
-    if depth > 1e3
-      error('Wrong depth for Thorpe model')
-    end
-    
-    attenuation = soundAttenuationThorpe(freq); %dB/m
-    
-  case 'fisher'
-    error('TODO')
-    
-    attenuation; %dB/m
-    
-  otherwise
-    error('Only thorpe/fisher')
-end
+% msg creation, modulation
+order = 4; %QPSK
+%msg = randi([0 order-1], 1, 1e5 ); %temp
+%pkg load communications
+%signalTransmitter = pskmod( msg, order, 0, 'gray' ) * soundTxPower;
 
-%noise ('Variability...')
-freqkHz = freq * 1e-3;
-noise = zeros(4,1); %dB
-noise(1) = 17 - 30*log10(freqkHz); %turbulence dB
-noise(2) = 40 + 20*(noiseParams(1)-0.5) + 26*log10(freqkHz) - 60*log10(freqkHz+0.03); %shipping dB
-noise(3) = 50 + 7.5*sqrt(noiseParams(2)) + 20*log10(freqkHz) - 40*log10(freqkHz+0.4); %waves dB
-noise(4) = -15 + 20*log10(freqkHz); %thermal dB
+% rate = log2(order)/symbolTime
+symbolTime = log2(order) / dataRate;
 
-% return to linear power in order to sum
-noise = 10.^(noise/10);
-noise = sum(noise);
-noise = 10*log10(noise);
+%reflections = multipath(...); % paths are same for both wave types
+reflections = zeros(2,4,4); %temp
+reflections(:,:,1) = 1.0e+02  * ...
+  [3.60000  3.60000  0.00000  1.42281;
+      NaN      NaN      NaN      NaN];
 
-%path finding
-% LOS - special case (draft)
-losLen = norm(tx-rx);
-losV = soundSpeed(temperature, [tx(3); rx(3)])
-% v=s/t -> t = s/v
-losTime = losLen / losV;
+reflections(:,:,2) = 1.0e+02  *...
+  [1.72969  1.72969  -7.98000  1.64248;
+      NaN      NaN      NaN      NaN];
 
-maxReflections = 3;
-%todo find paths - list/vector of reflection points and possibly indicators on which polygon are those reflections
-% paths are same for both wave types
+reflections(:,:,3) = 1.0e+02  *...
+  [1.22465  1.22465  -7.97000  1.94245;
+  4.24266  4.24266  0.00000  1.94245];
 
-%todo impulse response h for acoustic and EM:
+reflections(:,:,4) = 1.0e+02  *...
+  [1.39219  1.39219  0.00000  2.19670;
+  3.45454  3.45454  -7.98000  2.19670];
+reflections(:,4,:)/=pi;
+%impulse response h for acoustic and EM:
 % for each ray find:
 %  -time delay due to propagation (subtract LOS propagation time)
 %  -amplitude of ray in relation to unity (loss due to path loss and reflections)
 %  -phase of ray in relation to initial (0) phase (number of wavelengths passed due to propagation & reflection phase shifts)
-% 
-hAcoustic = complex( zeros( 1, max( delays )*timeResolution ) );
-hAcoustic( delays*timeResolution ) = abs(losses) * exp(-1i * phases ); %losses are linear, NOT dB
+
+  
+soundDelay = zeros(1, size(reflections,3)+1);
+soundRayTransmittance = ones(1, size(reflections,3)+1);
+
+lengthLOS = norm(tx-rx);
+
+for i=1:size(reflections,3)+1
+  if i ~= size(reflections,3)+1 %not LOS
+    point = reflections( :, 1:3, i );
+
+    if isnan( point(2,3) ) % omit ref(2,:,n)
+      lengths = [
+        norm( rx - point(1,:) );
+        norm( point(1,:) - tx )];
+      
+      speeds = [
+        soundSpeed( temperature, [rx(3); point(1,3)] );
+        soundSpeed( temperature, [point(1,3); tx(3)] )];
+        
+      depths = [rx(3); point(1,3); tx(3)];
+      
+    else
+      lengths = [
+        norm( rx - point(1,:) );
+        norm( point(1,:) - point(2,:) );
+        norm( point(2,:) - tx )];
+      
+      speeds = [
+        soundSpeed( temperature, [rx(3); point(1,3)] );
+        soundSpeed( temperature, [point(1,3); point(2,3)] );
+        soundSpeed( temperature, [point(2,3); tx(3)] )];
+        
+      depths = [rx(3); point(1,3); point(2,3); tx(3)];
+    end
+  else %LOS
+    lengths = [norm(tx-rx)];
+    speeds = soundSpeed( temperature, [tx(3); rx(3)] );
+    depths = [rx(3); tx(3)];
+  end
+  
+  i
+  lengths
+  speeds
+  depths
+  
+  soundDelay(i) = sum( lengths ./ speeds ); % t = s/v
+  
+  %phase change due to travel
+  lambdas = speeds ./ freq; %wavelengths for each part
+  lambda = sum( lengths ./ lambdas );
+  phase = lambda - floor(lambda); %fractional part
+  
+  %attenuation due to travel
+  absorptions = soundAttenuationFisher( freq, [depths(1:end-1)'; depths(2:end)'], temperature ).';
+  pathloss = soundPathLoss( lengths, absorptions, 2.0 );
+  
+  pathloss
+  disp( ' ')
+  
+  soundRayTransmittance(i) = exp( -1i * 2 * pi * phase ) / 10.^(pathloss/10);
+  
+  if i ~= size(reflections,3)+1
+    soundRayTransmittance(i) = soundRayTransmittance(i) * ...
+    soundReflectionWrapper( reflections( :, 4, i ), reflections( :, 3, i ) ); %reflections
+  end
+end
+
+soundDelay = soundDelay - min(soundDelay);
+soundTime = 0:symbolTime:max( soundDelay );
+
+soundH = complex( zeros( size( soundTime ) ) );
+for i=1:length(soundDelay)
+  [~, ind] = min( abs( soundTime - soundDelay(i) ) );
+  soundH(ind) = soundRayTransmittance(i) * soundTxPower;
+end
+
+
+figure
+subplot(2,1,1)
+stem(soundTime, 10*log10(abs(soundH)));
+m = xlim();
+m = m(2)*0.1;
+xlim( xlim() + [-m +m] )
+xlabel('time [s]')
+ylabel('sound ray power level [dB rel. miPa]')
+subplot(2,1,2)
+stem(soundTime, arg(soundH));
+xlim( xlim() + [-m +m] )
+xlabel('time [s]')
+ylabel('sound ray phase [rad]')
+
+
+
+
+
 
 %hEM
-
-%channel estimated for one sample
-
-% msg creation, modulation
-%for acoustic and EM: convolution with h, noise, demodulation, comparison with msg

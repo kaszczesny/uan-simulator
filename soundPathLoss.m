@@ -19,6 +19,6 @@ else
 end
 
 %from: AquaTools - An Underwater Acoustic...
-pathloss = k * 10*log10(distance) + distance .* absorption;
+pathloss = k * 10*log10(sum(distance)) + sum(distance .* absorption);
 
 %todo take into account that absorption changes for each ray piece
