@@ -122,9 +122,10 @@ grid on
 
 %sound speed
 subplot(1,2,2)
-plot( soundSpeed( waterTemperature( depth, 15 ), depth ), -depth )
+plot( soundSpeed( waterTemperature( depth, 15 ), depth ), depth )
 xlabel( 'sound speed [m/s]')
 ylabel( 'depth [m]')
+set(gca,'ydir','reverse')
 grid on
 
 s = 2*pi*2.4e6/radioSpeed(2.4e6);
