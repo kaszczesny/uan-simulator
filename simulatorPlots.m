@@ -5,16 +5,15 @@ clear all;
 close all;
 
 %path loss
-%todo EM @ 2.4 GHz
 figure
 distance = logspace( 0, 5, 1000 ); % 1 m - 100 km
 freq_ac = 10e3;
 semilogx( ...
-  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 2.0 ), 'r', ...
-  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 1.5 ), 'g', ...
-  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 2.0 ), 'b', ...
-  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 1.5 ), 'k', ...
-  distance, radioPathLoss( distance, radioAttenuation( 2.4e9 ) ), 'm'
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 2.0 ), 'r', ...
+  distance, soundPathLoss( distance, soundAttenuationThorpe( freq_ac ), 0, 1.5 ), 'g', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 2.0 ), 'b', ...
+  distance, soundPathLoss( distance, soundAttenuationFisher( freq_ac, 0.5e3, 4 ), 0, 1.5 ), 'k', ...
+  distance, radioPathLoss( distance, radioAttenuation( 2.4e6 ), 2.4e6 ), 'm'
 );
 grid on;
 xlabel( 'distance [m]' )
@@ -24,7 +23,7 @@ legend( ...
   sprintf( 'Acoustic, Thorpe f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
   sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 2.0 ), ...
   sprintf( 'Acoustic, Fisher f=%g kHz, k=%.1f', freq_ac*1e-3, 1.5 ), ...
-  'Electromagnetic, f=2.4 GHz'
+  'Electromagnetic, f=2.4 MHz'
 );
 ylim([0 250])
 title('path loss comparison')
@@ -47,7 +46,7 @@ title('sound absorption coefficient, Fisher model, temp. varies with depth (15 C
 
 %distance x frequency (fixed depth)
 [x, y] = meshgrid(logspace( 0, 4, 41 ), frequency); % 1 m - 10 km
-z = soundPathLoss( x, soundAttenuationFisher( y, 0.5e3, 8 ), 1.5 );
+z = soundPathLoss( x, soundAttenuationFisher( y, 0.5e3, 8 ), 0, 1.5 );
 figure
 surf(x,y*1e-3,z);
 colormap('jet')
@@ -61,12 +60,12 @@ title('sound path loss, Fisher model, 500 m, 8 C')
 %EM pathloss
 figure
 distance = 1:0.1:10;
-plot(distance, radioPathLoss( distance, radioAttenuation( 2.4e9 ) ) )
+plot(distance, radioPathLoss( distance, radioAttenuation( 2.4e6 ), 2.4e6 ) )
 xlabel( 'distance [m]' )
 ylabel( 'path loss [dB]' )
 xlim([1 10])
 grid on
-title('electromagnetic wave path loss @ 2.4 GHz')
+title('electromagnetic wave path loss @ 2.4 MHz')
 
 %acoustic noise
 figure
@@ -105,8 +104,8 @@ xlabel( 'sound speed [m/s]')
 ylabel( 'depth [m]')
 grid on
 
-s = radioSpeed(2.4e9);
-disp(sprintf('radio speed: %d m/s (%.2f%% c) @ 2.4 GHz', round(s), round(radioSpeed(s)*100)/3e9))
+s = 2*pi*2.4e6/radioSpeed(2.4e6);
+disp(sprintf('radio speed: %d m/s (%d%% c) @ 2.4 MHz', round(s), round(s*100/3e8)))
 
 %sound reflection
 figure

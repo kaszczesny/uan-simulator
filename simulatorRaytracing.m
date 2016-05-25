@@ -102,7 +102,7 @@ for i=1:size(reflections,3)+1
   
   %attenuation due to travel
   absorptions = soundAttenuationFisher( freq, [depths(1:end-1)'; depths(2:end)'], temperature ).';
-  pathloss = soundPathLoss( lengths, absorptions, 2.0 );
+  pathloss = soundPathLoss( lengths, absorptions, 1, 2.0 );
   
   pathloss
   disp( ' ')
