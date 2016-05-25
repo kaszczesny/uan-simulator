@@ -2,11 +2,15 @@
 
 function [pathLoss] = radioPathLoss (
 distance, ... % [m]
-attenuation ... % [dB/m] until changed to Np/m
-
+attenuation, ... % [Np/m]
+frequency ... % [Hz]
 )
 
+c = 299700 * 1000; %speed of light in air [m/s]
+
 %%Underwater Wireless Sensor Network Communication Using Electromagnetic Waves at Resonance Frequency 2.4 GHz
-pathLoss = 10 * log( exp(attenuation * distance) );
-%todo: implement whole equation (2); beta is the same as in radioSpeed
-%todo: verify function correctness by comparing visually with Figure 5. for 2.4 GHz
+pathLossZero = 20 * log10( 4 * pi() * distance * frequency / c );
+pathLossSpeed = 20 * log10( c / radioSpeed( frequency ) );
+pathLossAtt = 10 * log10( exp( (-2) * attenuation * distance) );
+
+pathLoss = pathLossZero + pathLossSpeed + pathLossAtt;

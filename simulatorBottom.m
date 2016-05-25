@@ -1,17 +1,32 @@
-close all;
-clear all;
+% returns points of multipath reflections
 
-visualisation = 1;
+%output is a matrix 2x4xn where n is the number of rays w/o LOS
 
-ilosc_x = 20
-ilosc_y = 50
+%  -                  -
+% | x1  y1  z1  angle1 |
+% | nan nan nan nan    |  for one reflection
+%  -                  -
 
-imax = -790
-imin = -800
-variation = 3
+%  -                  -
+% | x1  y1  z1  angle1 |
+% | x2  y2  z2  angle2 |  for two reflections
+%  -                  -
 
-sta1 = [100 100 -500]
-sta2 = [(ilosc_x)*100 (ilosc_y)*100 -200]
+function [output_matrix] = simulatorBottom (
+seabed, ... %number of points for seabed shaping [x y], size in meters equals seabed*100[m] -- [20 50]
+depth, ... %depth of seabed [-m] -- -800
+difference, ... %difference from mean seabed depth [m] -- 5
+variation, ... %RNG for seabed [m] -- 3
+sta1, ... %tx coordinates [x y z] [m] -- [0 0 -200]
+sta2, ... %rx coordinates [x y z] [m] -- [seabed(1)*100 seabed(2)*100 -500]
+visualisation ... %1 if plotted surface and rays are needed, 0 otherwise -- 1
+)
+
+ilosc_x = seabed(1);
+ilosc_y = seabed(2);
+
+imax = depth + difference;
+imin = depth - difference;
 
 disp("preparing bottom...")
 bottom = zeros(ilosc_x, ilosc_y);
@@ -190,6 +205,3 @@ else
     end
   end
 end
-
-size(output_matrix, 3)
-output_matrix
