@@ -7,7 +7,7 @@ surface_temp = 15;
  % TODO Dynamic wave values
 waves_angles = 0:pi/4:pi/2;
 num_of_waves = length(waves_angles);
-sim_duration = 10;  % in seconds
+sim_duration = 5;  % in seconds
 sim_interval = 1;   % in seconds
 
 start_temp = waterTemperature( start_depth, surface_temp );
@@ -25,11 +25,15 @@ for k = 1:sim_cycles
   for l = 1:num_of_waves
     depth = waves_depths(k,l) - sim_interval*waves_speeds(k,l)*real(sin(waves_angles(k,l)));
     % in case if simulation reached the surface simulation will get weird
-
-    temperature = waterTemperature(depth, surface_temp);
-    speed = soundSpeed( temperature, depth );
-
-    angle = refraction(waves_speeds(k,l), speed, waves_angles(k,l));
+    if depth < 0
+    	depth = NaN;
+    	speed = NaN;
+    	angle = NaN;
+    else
+    	temperature = waterTemperature(depth, surface_temp);
+    	speed = soundSpeed( temperature, depth );
+    	angle = refraction(waves_speeds(k,l), speed, waves_angles(k,l));
+    end
 
     temp_depth_vector = [temp_depth_vector, depth];
     temp_speed_vector = [temp_speed_vector, speed];
@@ -60,10 +64,10 @@ Y = [];
 X
 Y
 % Generate 5 hue-saturation-value color map for your data
-colorVec = hsv(num_of_waves);
+%colorVec = hsv(num_of_waves);
 % Plot and change the color for each line
-hold on;
+%hold on;
 %for l = 1:num_of_waves
 %    plot(X(l,:),Y(l,:),'Color',colorVec(l,:))
 %end
-hold off;
+%hold off;
