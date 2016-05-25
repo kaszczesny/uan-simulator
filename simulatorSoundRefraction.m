@@ -6,7 +6,7 @@ start_depth = 4000;
 surface_temp = 15;
  % TODO Dynamic wave values
 waves_angles = 0:pi/4:pi/2;
-num_of_waves = 3;
+num_of_waves = length(waves_angles);
 sim_duration = 2;  % in seconds
 sim_interval = 1;   % in seconds
 
@@ -23,18 +23,16 @@ for k = 1:sim_cycles
   temp_angle_vector = [];
   temp_speed_vector = [];
   for l = 1:num_of_waves
-    depth = waves_depths((k-1)*num_of_waves+l) - sim_interval*waves_speeds((k-1)*num_of_waves+l)*sin(waves_angles((k-1)*num_of_waves+l));
-    % in case if simulation reached the surface
-    if depth <= 0
-    	continue
-    end
-    temp_depth_vector = [temp_depth_vector, depth];
+    depth = waves_depths(k,l) - sim_interval*waves_speeds(k,l)*sin(waves_angles(k,l));
+    % in case if simulation reached the surface simulation will get weird
 
     temperature = waterTemperature(depth, surface_temp);
     speed = soundSpeed( temperature, depth );
-    temp_speed_vector = [temp_speed_vector, speed];
 
-    angle = refraction(waves_speeds((k-1)*num_of_waves+l), speed, waves_angles((k-1)*num_of_waves+l));
+    angle = refraction(waves_speeds(k,l), speed, waves_angles(k,l));
+
+    temp_depth_vector = [temp_depth_vector, depth];
+    temp_speed_vector = [temp_speed_vector, speed];
     temp_angle_vector = [temp_angle_vector, angle];
   end
   waves_depths = [waves_depths; temp_depth_vector];
