@@ -2,12 +2,12 @@ clear all;
 close all;
 
 % simulation parameters
-start_depth = 8000;
+start_depth = 5000;
 surface_temp = 15;
  % TODO Dynamic wave values
-waves_angles = 0:pi/30:pi/2;
-num_of_waves = length(waves_angles);
-sim_duration = 5;  % in seconds
+waves_angles = pi/100:pi/40:pi/4
+num_of_waves = length(waves_angles)
+sim_duration = 15;  % in seconds
 sim_interval = 0.1;   % in seconds
 
 start_temp = waterTemperature( start_depth, surface_temp );
@@ -24,15 +24,18 @@ for k = 1:sim_cycles
   temp_speed_vector = [];
   for l = 1:num_of_waves
     depth = waves_depths(k,l) - sim_interval*waves_speeds(k,l)*real(sin(waves_angles(k,l)));
+    temperature = waterTemperature(depth, surface_temp);
+    speed = soundSpeed( temperature, depth );
+    angle = refraction(waves_speeds(k,l), speed, waves_angles(k,l));
     % in case if simulation reached the surface simulation will get weird
     if depth < 0
     	depth = NaN;
     	speed = NaN;
     	angle = NaN;
-    else
-    	temperature = waterTemperature(depth, surface_temp);
-    	speed = soundSpeed( temperature, depth );
-    	angle = refraction(waves_speeds(k,l), speed, waves_angles(k,l));
+    elseif speed <= 0
+    	depth = NaN;
+    	speed = NaN;
+    	angle = NaN;
     end
 
     temp_depth_vector = [temp_depth_vector, depth];
@@ -45,7 +48,7 @@ for k = 1:sim_cycles
 end
 
 waves_depths
-waves_angles
+waves_angles;
 waves_speeds
 
 % X, Y for the plot
@@ -61,13 +64,22 @@ for k = 1:sim_cycles
   	Y(k,l) = -waves_depths(k,l);
   end
 end
-X
-Y
+X;
+Y;
+lgnd = cell(1, num_of_waves);
 % Generate 5 hue-saturation-value color map for your data
 colorVec = hsv(num_of_waves);
 % Plot and change the color for each line
 hold on;
+title('Sound wave path afected by refraction')
+xlabel('Distance [m]')
+ylabel('Depth [m]')
 for l = 1:num_of_waves
-    plot(transpose(X(:,l)),transpose(Y(:,l)),'Color',colorVec(l,:))
+    p(l) = plot(transpose(X(:,l)),transpose(Y(:,l)),'Color',colorVec(l,:));
+    lgnd{l} = strcat('release angle = ',num2str(waves_angles(1,l)));
 end
+lg = legend(p,lgnd);
+legend(lg,'location','southeast');
+legend boxoff;
 hold off;
+print -dpng sound_refraction.png
