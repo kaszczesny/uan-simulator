@@ -11,10 +11,10 @@ function out_angle = refraction(in_speed, out_speed, in_angle)
 
   sin_crit_angle = in_speed/out_speed;
 
-  out_angle = acos(sin(angle)*out_speed/in_speed);
+  out_angle = acos(real(sin(angle))*out_speed/in_speed);
 
   % no idea why complex numbers
-  out_angle = real(out_angle);
+  %out_angle = real(out_angle);
 
   if in_angle < 0
     out_angle = -out_angle;
