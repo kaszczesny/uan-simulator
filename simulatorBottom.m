@@ -19,7 +19,8 @@ difference, ... %difference from mean seabed depth [m] -- 5
 variation, ... %RNG for seabed [m] -- 3
 sta1, ... %tx coordinates [x y z] [m] -- [0 0 -200]
 sta2, ... %rx coordinates [x y z] [m] -- [seabed(1)*100 seabed(2)*100 -500]
-visualisation ... %1 if plotted surface and rays are needed, 0 otherwise -- 1
+visualisation, ... %1 if plotted surface and rays are needed, 0 otherwise -- 1
+step ... % step [m], default 100
 )
 
 ilosc_x = seabed(1);
@@ -45,7 +46,7 @@ bottom = bottom(6:end,6:end);
 
 if(visualisation == 1)
   close all;
-  [bottom_x, bottom_y] = meshgrid( [1:ilosc_x]*100, [1:ilosc_y]*100 );
+  [bottom_x, bottom_y] = meshgrid( [1:ilosc_x]*step, [1:ilosc_y]*step );
   figure
   surf(bottom')
   
@@ -55,7 +56,7 @@ if(visualisation == 1)
 end
 
 disp("calculating water reflection...")
-rectangle = [0 0 0; ilosc_x*100 0 0; 0 ilosc_y*100 0; ilosc_x*100 ilosc_y*100 0];
+rectangle = [0 0 0; ilosc_x*step 0 0; 0 ilosc_y*step 0; ilosc_x*step ilosc_y*step 0];
 N = cross(rectangle(1,:) - rectangle(3,:),rectangle(2,:) - rectangle(3,:));
 N = N/norm(N);
 %calculate sta2 mirrored parameters
@@ -78,7 +79,7 @@ disp("calculating intersection points for 1 reflection...")
 for iter=1:ilosc_x-1
   for jter=1:ilosc_y-1
     triangle=[iter jter bottom(iter,jter); iter+1 jter bottom(iter+1,jter); iter jter+1 bottom(iter,jter+1)];
-    triangle(:,1:2) = triangle(:,1:2)*100;
+    triangle(:,1:2) = triangle(:,1:2)*step;
     [intersection angle_temp] = calcTriangle(triangle, sta1, sta2);
     if(intersection == [-1, -1, -1])
     else
@@ -87,7 +88,7 @@ for iter=1:ilosc_x-1
     end
     
     triangle=[iter+1 jter+1 bottom(iter+1,jter+1); iter+1 jter bottom(iter+1,jter); iter jter+1 bottom(iter,jter+1)];
-    triangle(:,1:2) = triangle(:,1:2)*100;
+    triangle(:,1:2) = triangle(:,1:2)*step;
     [intersection angle_temp] = calcTriangle(triangle, sta1, sta2);
     if(intersection == [-1, -1, -1])
     else
@@ -102,7 +103,7 @@ for iter = 1:ilosc_x-1
   for jter = 1:ilosc_y-1
     
     triangle = [iter jter bottom(iter,jter); iter+1 jter bottom(iter+1,jter); iter jter+1 bottom(iter,jter+1)];
-    triangle(:,1:2) = triangle(:,1:2)*100;
+    triangle(:,1:2) = triangle(:,1:2)*step;
     [intersection angle_temp] = calcTriangle(triangle, sta1, sta2mirror);
     if(intersection == [-1, -1, -1])
     else
@@ -133,7 +134,7 @@ for iter = 1:ilosc_x-1
     end
     
     triangle=[iter+1 jter+1 bottom(iter+1,jter+1); iter+1 jter bottom(iter+1,jter); iter jter+1 bottom(iter,jter+1)];
-    triangle(:,1:2) = triangle(:,1:2)*100;
+    triangle(:,1:2) = triangle(:,1:2)*step;
     [intersection angle_temp] = calcTriangle(triangle, sta1, sta2mirror);
     if(intersection == [-1, -1, -1])
     else
