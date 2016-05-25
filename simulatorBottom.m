@@ -29,19 +29,22 @@ imax = depth + difference;
 imin = depth - difference;
 
 disp("preparing bottom...")
-bottom = zeros(ilosc_x, ilosc_y);
+bottom = zeros(ilosc_x+5, ilosc_y+5);
 
-bottom(:,1) = randi([imin imax], ilosc_x, 1);
-bottom(1,2:end) = randi([imin imax], 1, ilosc_y-1);
-variation_matrix = randi([-variation variation], ilosc_x-1, ilosc_y-1);
+bottom(:,1) = randi([imin imax], ilosc_x+5, 1);
+bottom(1,2:end) = randi([imin imax], 1, ilosc_y+4);
+variation_matrix = randi([-variation variation], ilosc_x+4, ilosc_y+4);
 
-for iter = 2:ilosc_x
-  for jter = 2:ilosc_y
+for iter = 2:ilosc_x+5
+  for jter = 2:ilosc_y+5
     bottom(iter, jter) = round(mean([bottom(iter-1, jter), bottom(iter, jter-1)]) + variation_matrix(iter-1, jter-1));
   end
 end
 
+bottom = bottom(6:end,6:end);
+
 if(visualisation == 1)
+  close all;
   [bottom_x, bottom_y] = meshgrid( [1:ilosc_x]*100, [1:ilosc_y]*100 );
   figure
   surf(bottom')
