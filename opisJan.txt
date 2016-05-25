@@ -1,0 +1,28 @@
+bottomSimulation
+
+1. making the seabed shape - generate two vectors along with rng matrix, every point in within the surface is a combination of rng at this point and two adjacent values
+2. multipath calculation - for given surface calculate surface normal, calculate coordinates of mirrored point 1, calculate equation of the line between mirrored point 1 and point 2, calculate coordinates of point of intersection and angle between line equation and surface normal. lastly, check if intersection point lies within triangle surface.
+3. for two reflections mirror one point from surface of water, and check every triangle in seabed surface
+4. rewrite points to 3d matrix format
+
+
+radio
+
+permittivity = permitivity_0 * permitivity_relative -> epsilon // farads per meter, relative for salt water = 81, _zero = 8.8*10^-12 
+conductivity = -> sigma // siemens per meter, 4 for salt water 0.01 for normal water in 20 degrees celsius
+permeability = permeability_0 * permeability_relative -> mi //henries per meter, relative = 0.99991, _zero = 1.2566370614*10^−6
+angular frequency = 2 pi f // radians
+
+attenuation = ang_freq * sqrt( (mi * epsilon / 2) * (sqrt(1 + (sigma/(ang_freq*epsilon))^2 ) - 1)) // nepers per meter
+wave_number = ang_freq * sqrt( (mi * epsilon / 2) * (sqrt(1 + (sigma/(ang_freq*epsilon))^2 ) + 1)) // radians per meter
+speed = ang_freq / wave_number // meters per second
+
+path loss in air:
+pathLossZero = 20 * log10( 4 * pi() * distance * frequency / c );
+path loss due to change in medium:
+pathLossSpeed = 20 * log10( c / radioSpeed( frequency ) );
+path loss due to attenuation in medium:
+pathLossAtt = 20 * distance * attenuation / log(10);
+pathLoss = pathLossZero + pathLossSpeed + pathLossAtt; // dB/m
+
+
