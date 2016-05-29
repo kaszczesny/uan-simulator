@@ -167,6 +167,7 @@ for iter = 1:ilosc_x-1
   end
 end
 
+angle = angle / pi;
 output_matrix = [];
  
 if (visualisation == 1)
